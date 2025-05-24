@@ -41,6 +41,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/_internal/message-schema": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * (internal) Message schema carrier
+         * @description **Internal** – never used in production.
+         *
+         *     Exists only so that `Message` is part of the OpenAPI spec
+         *     (otherwise it would be stripped because WebSockets are ignored).
+         */
+        get: operations["_expose_message_schema__internal_message_schema_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/status": {
         parameters: {
             query?: never;
@@ -62,6 +85,21 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** BaseMessage */
+        BaseMessage: {
+            /**
+             * Type
+             * @description Who sent the message
+             * @enum {string}
+             */
+            type: "human" | "ai" | "tool";
+            /** Content */
+            content: string;
+            /** Conversation Id */
+            conversation_id: string;
+            /** Tool Calls */
+            tool_calls?: components["schemas"]["ToolCall"][] | null;
+        };
         /** ExampleResponse */
         ExampleResponse: {
             /** Id */
@@ -83,6 +121,13 @@ export interface components {
         PutExampleRequest: {
             /** Name */
             name: string;
+        };
+        /** ToolCall */
+        ToolCall: {
+            /** Name */
+            name: string;
+            /** Args */
+            args: Record<string, never>;
         };
         /** ValidationError */
         ValidationError: {
@@ -248,6 +293,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    _expose_message_schema__internal_message_schema_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BaseMessage"];
                 };
             };
         };

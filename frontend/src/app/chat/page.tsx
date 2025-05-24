@@ -13,7 +13,7 @@ export default function ChatPage() {
 
     useEffect(() => {
         const connectWebSocket = () => {
-            const ws = new WebSocket("ws://localhost:3000/api/chat");
+            const ws = new WebSocket("ws://localhost:8000/api/chat");
             setSocket(ws);
 
             ws.onopen = () => {

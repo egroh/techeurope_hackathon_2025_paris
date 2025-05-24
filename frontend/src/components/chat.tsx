@@ -39,7 +39,7 @@ export function CardsChat({ messages, onSendMessage }: CardsChatProps) {
         <CardHeader className="flex flex-row items-center">
           <div className="flex items-center space-x-4">
             <Avatar>
-              <AvatarImage src="/avatars/01.png" alt="Image" />
+              <AvatarImage src="" alt="Image" />
               <AvatarFallback>LLM</AvatarFallback>
             </Avatar>
             <div>
