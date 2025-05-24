@@ -8,8 +8,11 @@ class ToolCall(BaseModel):
    name: str
    args: Dict[str, Any]
 
-class BaseMessage(BaseModel):
+class OpenAIChatMessage(BaseModel):
    type: Literal["human", "ai", "tool"] = Field(..., description="Who sent the message")
    content: str
    conversation_id: str
    tool_calls: Optional[List[ToolCall]] = None
+
+class ChatMessageResponse(BaseModel):
+   content: str

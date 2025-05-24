@@ -8,22 +8,9 @@ from pydantic import BaseModel, Field, ValidationError # For schemas and error h
 
 # Assuming LLMAgent and schemas are structured as before
 from .agent import LLMAgent # Keep if you plan to use it
-from .schemas import PostUserMessage, BaseMessage, ToolCall # Ensure these are correctly defined
-
-# If schemas are in this file, they would be here:
-# class PostUserMessage(BaseModel):
-#     content: str
-
-# class ToolCall(BaseModel):
-#    name: str
-#    args: Dict[str, Any]
-
-# class BaseMessage(BaseModel):
-#    type: Literal["human", "ai", "tool"] = Field(..., description="Who sent the message")
-#    content: str
-#    conversation_id: str
-#    tool_calls: Optional[List[ToolCall]] = None
-
+from .mathstral_model import MATHSTRAL_MODEL
+from .schemas import PostUserMessage, OpenAIChatMessage, ToolCall, \
+    ChatMessageResponse  # Ensure these are correctly defined
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -56,7 +43,7 @@ async def chat_websocket_endpoint(websocket: WebSocket): # Renamed for clarity
                     logger.error(
                         f"Invalid JSON received on conversation {conversation_id}: {data}"
                     )
-                    error_response = BaseMessage(
+                    error_response = OpenAIChatMessage(
                         type="ai", # Or a new "error" type
                         content="Error: Invalid JSON format.",
                         conversation_id=conversation_id,
@@ -67,7 +54,7 @@ async def chat_websocket_endpoint(websocket: WebSocket): # Renamed for clarity
                     logger.error(
                         f"Validation error for incoming message on conversation {conversation_id}: {e.errors()}"
                     )
-                    error_response = BaseMessage(
+                    error_response = OpenAIChatMessage(
                         type="ai", # Or a new "error" type
                         content=f"Error: Invalid message structure. {e.errors()}",
                         conversation_id=conversation_id,
@@ -79,19 +66,8 @@ async def chat_websocket_endpoint(websocket: WebSocket): # Renamed for clarity
                     f"Received message from user on conversation {conversation_id}: {user_message.content}"
                 )
 
-                # Placeholder for your agent's response logic
-                # async for response_chunk in agent.astream(user_message.content, conversation_id):
-                #     ai_response = BaseMessage(
-                #         type="ai",
-                #         content=response_chunk, # Assuming agent streams content string
-                #         conversation_id=conversation_id
-                #     )
-                #     await websocket.send_text(ai_response.model_dump_json())
-                #     logger.info(f"WS sent chunk to {conversation_id}: {response_chunk[:50]}...")
-
-                # Current hardcoded response (updated to use correct conversation_id)
-                ai_response_content = "Testing response from AI."
-                ai_response = BaseMessage(
+                ai_response_content = MATHSTRAL_MODEL.generate(user_message.content)
+                ai_response = OpenAIChatMessage(
                     type="ai",
                     content=ai_response_content,
                     conversation_id=conversation_id, # Use the generated conversation_id
@@ -114,7 +90,7 @@ async def chat_websocket_endpoint(websocket: WebSocket): # Renamed for clarity
                 )
                 # Optionally send an error message to the client before closing or breaking
                 try:
-                    error_response = BaseMessage(
+                    error_response = OpenAIChatMessage(
                         type="ai", # Or "error"
                         content="An unexpected server error occurred.",
                         conversation_id=conversation_id,
@@ -134,29 +110,21 @@ async def chat_websocket_endpoint(websocket: WebSocket): # Renamed for clarity
         # await websocket.close()
 
 
+"""
+**Internal** – never used in production.
+
+Exists only so that are part of the OpenAPI spec, as WebSocket messages are not automatically included.
+"""
 @router.get(
     "/_internal/message-schema",
-    response_model=BaseMessage,
+    response_model=OpenAIChatMessage,
     tags=["internal"],
     summary="(internal) Message schema carrier",
     include_in_schema=True, # Explicitly ensure it's in schema
 )
-async def _expose_message_schema() -> BaseMessage:
-    """
-    **Internal** – never used in production.
+async def _expose_message_schema() -> (OpenAIChatMessage, ChatMessageResponse):
 
-    Exists only so that `BaseMessage` (and its components like `ToolCall`)
-    are part of the OpenAPI spec, as WebSocket messages are not automatically
-    included.
-    """
     # This is a placeholder and will not be called by clients.
     # Its purpose is purely for schema generation.
-    return BaseMessage(
-        type="ai",
-        content="Schema placeholder content.",
-        conversation_id="00000000-0000-0000-0000-000000000000",
-        tool_calls=[
-            ToolCall(name="example_tool", args={"param1": "value1"})
-        ],
-    )
+    HTTPException(status_code=404,)
 

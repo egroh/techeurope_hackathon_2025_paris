@@ -3,6 +3,8 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 from huggingface_hub import login
 
+import os
+os.environ["HF_HOME"]           = "/tmp/huggingface_cache"
 
 class MathstralModel(object):
     def __init__(self):
@@ -16,10 +18,10 @@ class MathstralModel(object):
         # tokenizer_model_path = "./models/mathstral_tokenizer"
         # cache_dir = "./cache"
 
-        model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", torch_dtype=torch.bfloat16)
+        model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16)
         # model.save_pretrained(pretrained_model_path)
         
-        model = model.to(torch.device("cuda"))
+        #model = model.to(torch.device("cuda"))
 
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         # tokenizer.save_pretrained(tokenizer_model_path)
@@ -43,3 +45,6 @@ class MathstralModel(object):
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         print(response)
         return response
+
+
+MATHSTRAL_MODEL = MathstralModel()
