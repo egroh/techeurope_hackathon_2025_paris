@@ -39,7 +39,7 @@ class MathstralModel(object):
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
 
         # Generate the response
-        outputs = self.model.generate(**inputs, max_new_tokens=512)
+        outputs = self.model.generate(**inputs)
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         print(response)
         return response
