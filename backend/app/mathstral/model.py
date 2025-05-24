@@ -30,7 +30,7 @@ class MathstralModel(object):
     def _format_prompt(self, prompt: str) -> str:
         prompt_formatted = prompt + "\n" +\
                             "Give step by step solution in the following format.\n" +\
-                            "[step 1]\n[step 2]\n ... \n[step n]"
+                            "<step 1>\n<step 2>\n ... \n<step n>"
         return prompt_formatted
     
     def generate(self, prompt: str):
