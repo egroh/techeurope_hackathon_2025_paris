@@ -11,6 +11,7 @@ from sqlmodel import SQLModel # type: ignore
 
 from .example.router import router as example_router
 from .chat.router import router as chat_router
+from .mathstral.router import router as mathstral_router
 
 # --- Logging Configuration ---
 logging.basicConfig(level=logging.INFO)
@@ -124,6 +125,7 @@ def create_app() -> FastAPI:
     # e.g., if chat_router has "/chat", it becomes "/api/chat".
     app.include_router(example_router, tags=["Example Endpoints"])
     app.include_router(chat_router, tags=["Chat Endpoints"])
+    app.include_router(mathstral_router, tags=["MathstralAI Endpoints"])
 
     logger.info(
         f"FastAPI application configured. Root path: '{config.API_ROOT_PATH}'. "
