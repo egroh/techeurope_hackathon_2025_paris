@@ -1,5 +1,6 @@
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import BitsAndBytesConfig
 import torch
 from huggingface_hub import login
 
@@ -18,9 +19,10 @@ class MathstralModel(object):
         # tokenizer_model_path = "./models/mathstral_tokenizer"
         # cache_dir = "./cache"
 
-        model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16)
+        bnb_config = BitsAndBytesConfig(load_in_8bit=True)
+        model = AutoModelForCausalLM.from_pretrained(model_name, quantization_config=bnb_config)
         # model.save_pretrained(pretrained_model_path)
-        
+
         #model = model.to(torch.device("cuda"))
 
         tokenizer = AutoTokenizer.from_pretrained(model_name)
