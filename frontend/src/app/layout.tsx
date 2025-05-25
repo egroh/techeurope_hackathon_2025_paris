@@ -1,30 +1,23 @@
+// src/app/layout.tsx (or wherever your RootLayout is)
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google"; // Corrected import
 import "./globals.css";
 import { Toaster } from "sonner";
-import { AppSidebar } from "@/components/app-sidebar"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
+import { AppSidebar } from "@/components/app-sidebar";
+// Removed Breadcrumb imports as they are no longer used here
+import { Separator } from "@/components/ui/separator"; // Keep if used elsewhere, or remove if only for breadcrumbs
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
-
-const geistSans = Geist({
+const geistSans = Geist({ // Corrected variable name
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
+const geistMono = Geist_Mono({ // Corrected variable name
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
@@ -44,22 +37,24 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
- <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-
-          </div>
-        </header>
-        <div className="m-4">
-        {children}
-        <Toaster />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
+            {/* The header containing breadcrumbs is removed. */}
+            {/* We might need a minimal header for the SidebarTrigger if it's not part of AppSidebar */}
+            <header className="flex h-12 items-center px-4 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 border-b">
+              {/* This ensures the trigger is always accessible and styled consistently */}
+              <SidebarTrigger className="-ml-1" />
+              {/* You can add a page title here if needed, passed via context or props */}
+            </header>
+            <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8
+                             relative pattern-main-area">
+              {/* Added flex-1 and overflow-y-auto to the main content wrapper */}
+              {children}
+              <Toaster />
+            </main>
+          </SidebarInset>
+        </SidebarProvider>
       </body>
     </html>
   );
