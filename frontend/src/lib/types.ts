@@ -48,13 +48,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * (internal) Message schema carrier
-         * @description **Internal** – never used in production.
-         *
-         *     Exists only so that `Message` is part of the OpenAPI spec
-         *     (otherwise it would be stripped because WebSockets are ignored).
-         */
+        /** (internal) Message schema carrier */
         get: operations["_expose_message_schema__internal_message_schema_get"];
         put?: never;
         post?: never;
@@ -85,21 +79,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** BaseMessage */
-        BaseMessage: {
-            /**
-             * Type
-             * @description Who sent the message
-             * @enum {string}
-             */
-            type: "human" | "ai" | "tool";
-            /** Content */
-            content: string;
-            /** Conversation Id */
-            conversation_id: string;
-            /** Tool Calls */
-            tool_calls?: components["schemas"]["ToolCall"][] | null;
-        };
         /** ExampleResponse */
         ExampleResponse: {
             /** Id */
@@ -111,6 +90,28 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** OpenAIChatMessage */
+        OpenAIChatMessage: {
+            /** Id */
+            id?: string;
+            /** Conversation Id */
+            conversation_id: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "human" | "ai" | "system" | "error" | "tool_request" | "tool_response";
+            /** Content */
+            content?: string | null;
+            /** Tool Calls */
+            tool_calls?: components["schemas"]["ToolCall"][] | null;
+            /** Tool Call Id */
+            tool_call_id?: string | null;
+            /** Message Id */
+            message_id?: string | null;
+            /** Stream Event */
+            stream_event?: ("start" | "chunk" | "end") | null;
         };
         /** PostExampleRequest */
         PostExampleRequest: {
@@ -124,10 +125,16 @@ export interface components {
         };
         /** ToolCall */
         ToolCall: {
-            /** Name */
-            name: string;
-            /** Args */
-            args: Record<string, never>;
+            /** Id */
+            id?: string;
+            /**
+             * Type
+             * @default function
+             * @constant
+             */
+            type: "function";
+            /** Function */
+            function: Record<string, never>;
         };
         /** ValidationError */
         ValidationError: {
@@ -312,7 +319,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BaseMessage"];
+                    "application/json": components["schemas"]["OpenAIChatMessage"];
                 };
             };
         };
