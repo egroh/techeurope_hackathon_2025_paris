@@ -164,7 +164,7 @@ async def chat_websocket_endpoint(websocket: WebSocket):
 
 
 @router.websocket("/chat_with_verification")
-async def chat_websocket_endpoint(websocket: WebSocket):
+async def chat_with_verification_websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     active_conversation_id = str(uuid.uuid4())
     logger.info(
