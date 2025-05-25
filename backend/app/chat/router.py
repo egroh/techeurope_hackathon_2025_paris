@@ -404,7 +404,7 @@ async def explain_lesson_websocket_endpoint(websocket: WebSocket):
 
                 # --- Step 1: Generate Math Solution with lesson_explain ---
                 logger.info(
-                    f"[{active_conversation_id}] Calling Mathstral model for solution..."
+                    f"[{active_conversation_id}] Calling explain_lesson for solution..."
                 )
                 textual_prompt = original_problem_statement
                 ocr_text = None # need to get ocr data from websocket
