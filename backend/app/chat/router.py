@@ -16,6 +16,7 @@ from .math_verification_pipeline import (
 ) # Ensure this path is correct
 
 from .lesson_explainer import explain_lesson
+from .ode.ode_pipeline import run_ode_pipeline
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -467,7 +468,6 @@ async def explain_lesson_websocket_endpoint(websocket: WebSocket):
         )
 
 
-# !!!chat_ode is not completed
 @router.websocket("/chat_ode")
 async def chat_ode_websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -528,15 +528,14 @@ async def chat_ode_websocket_endpoint(websocket: WebSocket):
                     f"[{active_conversation_id}] Calling run_pipeline for solution..."
                 )
 
-                # result_ode = run_pipeline(original_problem_statement)
-                result_ode = None # for debug
+                result_ode = run_ode_pipeline(original_problem_statement)
 
                 logger.info(
-                    f"[{active_conversation_id}] run_pipeline completed. Full solution length: {len(result_ode)}"
+                    f"[{active_conversation_id}] run_ode_pipeline completed. Full solution length: {len(result_ode)}"
                 )
                 if not result_ode:
                     logger.warning(
-                        f"[{active_conversation_id}] run_pipeline returned an empty solution."
+                        f"[{active_conversation_id}] run_ode_pipeline returned an empty solution."
                     )
 
                 if result_ode:
@@ -550,7 +549,7 @@ async def chat_ode_websocket_endpoint(websocket: WebSocket):
                     await websocket.send_text(info_msg.model_dump_json())
                 else:
                     logger.info(
-                        f"[{active_conversation_id}] No solution from run_pipeline."
+                        f"[{active_conversation_id}] No solution from run_ode_pipeline."
                     )
                     # Client already knows stream ended, possibly with no content.
 
