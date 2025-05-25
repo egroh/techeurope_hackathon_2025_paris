@@ -467,6 +467,124 @@ async def explain_lesson_websocket_endpoint(websocket: WebSocket):
         )
 
 
+# !!!chat_ode is not completed
+@router.websocket("/chat_ode")
+async def chat_ode_websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    active_conversation_id = str(uuid.uuid4())
+    logger.info(
+        f"WebSocket accepted for new conversation: {active_conversation_id}"
+    )
+
+    try:
+        while True:
+            try:
+                data = await websocket.receive_text()
+                logger.debug(
+                    f"Received raw data on conv {active_conversation_id}: {data}"
+                )
+
+                try:
+                    message_data = json.loads(data)
+                    user_message_payload = PostUserMessage(**message_data)
+                except json.JSONDecodeError:
+                    logger.error(
+                        f"Invalid JSON on conv {active_conversation_id}: {data}"
+                    )
+                    error_response = OpenAIChatMessage(
+                        type="error",
+                        content="Error: Invalid JSON format.",
+                        conversation_id=active_conversation_id,
+                        message_id=str(uuid.uuid4()),
+                    )
+                    await websocket.send_text(
+                        error_response.model_dump_json()
+                    )
+                    continue
+                except ValidationError as e:
+                    logger.error(
+                        f"Validation error on conv {active_conversation_id}: {e.errors()}"
+                    )
+                    error_response = OpenAIChatMessage(
+                        type="error",
+                        content=f"Error: Invalid message structure. {e.errors()}",
+                        conversation_id=active_conversation_id,
+                        message_id=str(uuid.uuid4()),
+                    )
+                    await websocket.send_text(
+                        error_response.model_dump_json()
+                    )
+                    continue
+
+                original_problem_statement = user_message_payload.content
+                logger.info(
+                    f"User message on conv {active_conversation_id} (problem statement): '{original_problem_statement[:100]}...'"
+                )
+
+                ai_message_id_explain_lesson = str(uuid.uuid4())
+
+                # --- Step 1: Generate Math Solution with ode solver ---
+                logger.info(
+                    f"[{active_conversation_id}] Calling run_pipeline for solution..."
+                )
+
+                # result_ode = run_pipeline(original_problem_statement)
+                result_ode = None # for debug
+
+                logger.info(
+                    f"[{active_conversation_id}] run_pipeline completed. Full solution length: {len(result_ode)}"
+                )
+                if not result_ode:
+                    logger.warning(
+                        f"[{active_conversation_id}] run_pipeline returned an empty solution."
+                    )
+
+                if result_ode:
+                    # Optionally inform client
+                    info_msg = OpenAIChatMessage(
+                        type="ai", # Define in schema
+                        content="Solution generated.",
+                        conversation_id=active_conversation_id,
+                        message_id=str(uuid.uuid4())
+                    )
+                    await websocket.send_text(info_msg.model_dump_json())
+                else:
+                    logger.info(
+                        f"[{active_conversation_id}] No solution from run_pipeline."
+                    )
+                    # Client already knows stream ended, possibly with no content.
+
+            except WebSocketDisconnect:
+                logger.info(
+                    f"WebSocket disconnected for conv ID: {active_conversation_id}"
+                )
+                break
+            except Exception as e:
+                logger.error(
+                    f"Error in WebSocket main loop for conv {active_conversation_id}: {e}",
+                    exc_info=True,
+                )
+                try:
+                    error_response = OpenAIChatMessage(
+                        type="error",
+                        content="An unexpected server error occurred processing your request.",
+                        conversation_id=active_conversation_id,
+                        message_id=str(uuid.uuid4()),
+                    )
+                    await websocket.send_text(
+                        error_response.model_dump_json()
+                    )
+                except Exception as send_e:
+                    logger.error(
+                        f"[{active_conversation_id}] Failed to send error to client: {send_e}"
+                    )
+                break  # Break from while loop on unhandled errors
+    finally:
+        logger.info(
+            f"Closing WebSocket handler for conv ID: {active_conversation_id}"
+        )
+
+
 @router.get(
     "/_internal/message-schema",
     response_model=OpenAIChatMessage,
