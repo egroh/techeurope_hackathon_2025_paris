@@ -135,12 +135,13 @@ async def chat_websocket_endpoint(websocket: WebSocket):
                     related_thms = verification_result_dict["details"]
                     _prompt_for_verification = _format_prompt_for_verification(question, step_by_step_answer, related_thms)
 
+                    ai_message_id_mathstral_verification = str(uuid.uuid4())
                     mathstral_full_solution = (
                         await MATHSTRAL_MODEL.generate_stream(
                             prompt=_prompt_for_verification,
                             websocket=websocket,
                             conversation_id=active_conversation_id,
-                            ai_message_id=ai_message_id_mathstral,
+                            ai_message_id=ai_message_id_mathstral_verification,
                             is_verification_step=True
                         )
                     )
