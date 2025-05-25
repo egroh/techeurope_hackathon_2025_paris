@@ -3,6 +3,7 @@
 ### By far the most accurate Math solving LLM 
 
 This repository implements a hybrid pipeline that combines large language models (LLMs) with symbolic and numeric solvers to accurately solve and explain mathematical problems across various domains (algebra, ODEs, PDEs, logic puzzles, and more), by leveraging Mathstral for step-by-step derivations and Codestral for code generation, then cross-checking with formal solvers like Z3 and Sympy. We achieve both human-readable solutions and machine-verified correctness.
+![WhatsApp Image 2025-05-25 at 13 25 04](https://github.com/user-attachments/assets/50630fcd-c8b2-4a85-8b74-8e0a8c638af6)
 
 ### Part - 1 
 #### The solver implementation is a novel extension of the base paper, `*Why hardcode solvers? When you can dynamically generate the solver's constraints? *`
