@@ -1,7 +1,7 @@
 import NeonIsometricMaze from "@/components/neon-isometric-maze";
 import LandingContent from "@/components/LandingContent";
 
-export default function LandingPage() { // Or DemoPage, the name here doesn't break things
+export default function LandingPage() {
   const pageContent = {
     title: "Your Awesome Project",
     description: "Discover the amazing features we offer, all wrapped in a stunning visual experience.",
