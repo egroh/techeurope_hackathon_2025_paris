@@ -16,9 +16,12 @@ import { ChatMessage } from "@/components/ChatMessage"; // <--- IMPORTING THE SI
 interface ChatProps { // Renamed from CardsChatProps to ChatProps to match component name
   messages: Array<OpenAIChatMessage>;
   onSendMessage: (message: string) => void;
+
+  taskTypeSelector?: React.ReactNode;
+
 }
 
-export function Chat({ messages, onSendMessage }: ChatProps) { // Renamed from CardsChat to Chat
+export function Chat({ messages, onSendMessage, taskTypeSelector }: ChatProps) {
   const [input, setInput] = React.useState("");
   const messagesEndRef = React.useRef<HTMLDivElement | null>(null);
   const inputLength = input.trim().length;
@@ -42,6 +45,11 @@ export function Chat({ messages, onSendMessage }: ChatProps) { // Renamed from C
       </CardHeader>
 
       <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+
+        {taskTypeSelector && (
+          <div className="mb-4">{taskTypeSelector}</div>
+        )}
+
         {messages.map((message: OpenAIChatMessage) => (
           <ChatMessage
             // Use a stable unique ID from the message object itself for the key
