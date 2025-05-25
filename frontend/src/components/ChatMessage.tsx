@@ -78,7 +78,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
           // Pass isStreaming to AiThinkingStream for its internal spinner logic
           // but the decision to show AiThinkingStream itself is based on message.isThinking
           isStreaming={message.isStreaming === true}
-          defaultOpen={message.isThinking || (message.content && message.content.length > 0)}
+          defaultOpen={message.isThinkingProcess || (message.content && message.content.length > 0)}
         />
       )}
 

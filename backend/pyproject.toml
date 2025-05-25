@@ -82,4 +82,5 @@ dependencies = [
     "triton==3.3.0",
     "urllib3==2.4.0",
     "xformers==0.0.30",
+    "google-api-python-client==2.170.0",
 ]

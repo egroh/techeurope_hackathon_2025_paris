@@ -10,6 +10,7 @@ from sqlalchemy import text as sqlalchemy_text
 from sqlmodel import SQLModel # type: ignore
 
 from .example.router import router as example_router
+from .support.router import router as support_router
 from .chat.router import router as chat_router
 
 # --- Logging Configuration ---
@@ -123,6 +124,7 @@ def create_app() -> FastAPI:
     # Paths defined in these routers will be prefixed by `config.API_ROOT_PATH`.
     # e.g., if chat_router has "/chat", it becomes "/api/chat".
     app.include_router(example_router, tags=["Example Endpoints"])
+    app.include_router(support_router)  # Same prefix, or choose another like /api/support
     app.include_router(chat_router, tags=["Chat Endpoints"])
 
     logger.info(

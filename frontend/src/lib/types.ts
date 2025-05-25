@@ -41,6 +41,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/support/ocr/parse-document": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Parse Document Endpoint
+         * @description Upload a document (PDF, image) to extract text content using Mistral OCR.
+         *     Returns a list of markdown strings, one for each page.
+         */
+        post: operations["parse_document_endpoint_support_ocr_parse_document_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/support/youtube/search-by-topics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Search Youtube By Topics Endpoint
+         * @description Search YouTube for videos based on a list of topics.
+         */
+        post: operations["search_youtube_by_topics_endpoint_support_youtube_search_by_topics_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/_internal/message-schema": {
         parameters: {
             query?: never;
@@ -79,6 +120,27 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Body_parse_document_endpoint_support_ocr_parse_document_post */
+        Body_parse_document_endpoint_support_ocr_parse_document_post: {
+            /**
+             * File
+             * Format: binary
+             * @description Document file (PDF, PNG, JPG, etc.) to be processed by OCR.
+             */
+            file: string;
+            /**
+             * Model
+             * @description The Mistral OCR model to use.
+             * @default mistral-ocr-latest
+             */
+            model: string | null;
+            /**
+             * Include Images
+             * @description Whether to include base64 encoded images in the output (not typically used for markdown extraction).
+             * @default false
+             */
+            include_images: boolean | null;
+        };
         /** ExampleResponse */
         ExampleResponse: {
             /** Id */
@@ -90,6 +152,13 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** OCRResponseModel */
+        OCRResponseModel: {
+            /** Pages */
+            pages: string[];
+            /** Message */
+            message?: string | null;
         };
         /** OpenAIChatMessage */
         OpenAIChatMessage: {
@@ -148,6 +217,51 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /** YouTubeSearchRequest */
+        YouTubeSearchRequest: {
+            /** Topics */
+            topics: string[];
+            /**
+             * Videos Per Topic
+             * @default 3
+             */
+            videos_per_topic: number | null;
+        };
+        /** YouTubeSearchResponse */
+        YouTubeSearchResponse: {
+            /** Results */
+            results: {
+                [key: string]: components["schemas"]["YouTubeVideo"][];
+            };
+            /** Message */
+            message?: string | null;
+        };
+        /** YouTubeVideo */
+        YouTubeVideo: {
+            /** Title */
+            title?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Channel */
+            channel?: string | null;
+            /** Published At */
+            published_at?: string | null;
+            /** Video Id */
+            video_id: string;
+            /**
+             * Url
+             * Format: uri
+             */
+            url: string;
+            /** Thumbnail Url */
+            thumbnail_url?: string | null;
+            /** Views */
+            views?: string | null;
+            /** Likes */
+            likes?: string | null;
+            /** Duration */
+            duration?: string | null;
         };
     };
     responses: never;
@@ -295,6 +409,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    parse_document_endpoint_support_ocr_parse_document_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_parse_document_endpoint_support_ocr_parse_document_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OCRResponseModel"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_youtube_by_topics_endpoint_support_youtube_search_by_topics_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["YouTubeSearchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["YouTubeSearchResponse"];
                 };
             };
             /** @description Validation Error */
