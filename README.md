@@ -7,7 +7,8 @@ This repository implements a hybrid pipeline that combines large language models
 
 ![The detailed ](https://github.com/user-attachments/assets/50630fcd-c8b2-4a85-8b74-8e0a8c638af6)
 
-![The link to Demo ](https://well-accurate-duckling.ngrok-free.app/)
+demo link:  
+https://well-accurate-duckling.ngrok-free.app/
 
 #### The solver implementation is a novel extension of the base paper, `*Why hardcode solvers? When you can dynamically generate the solver's constraints? *`
 > **Neuro Symbolic Reasoning for Planning: Counterexample Guided Inductive Synthesis Using Large Language Models and Satisfiability Solving**  
