@@ -3,12 +3,15 @@
 ### By far the most accurate Math solving LLM 
 
 This repository implements a hybrid pipeline that combines large language models (LLMs) with symbolic and numeric solvers to accurately solve and explain mathematical problems across various domains (algebra, ODEs, PDEs, logic puzzles, and more), by leveraging Mathstral for step-by-step derivations and Codestral for code generation, then cross-checking with formal solvers like Z3 and Sympy. We achieve both human-readable solutions and machine-verified correctness.
-![WhatsApp Image 2025-05-25 at 13 25 04](https://github.com/user-attachments/assets/50630fcd-c8b2-4a85-8b74-8e0a8c638af6)
+![The overall workflow](https://github.com/user-attachments/assets/7025e8f5-90e0-4fb9-b515-3a1ba173275a)
+
+![The detailed ](https://github.com/user-attachments/assets/50630fcd-c8b2-4a85-8b74-8e0a8c638af6)
 
 ### Part - 1 
 #### The solver implementation is a novel extension of the base paper, `*Why hardcode solvers? When you can dynamically generate the solver's constraints? *`
 > **Neuro Symbolic Reasoning for Planning: Counterexample Guided Inductive Synthesis Using Large Language Models and Satisfiability Solving**  
 > by Jha et al.
+
 
 
 #### why is it any better than existing large reasoning models? Because none of them use `rigorous solvers` to verify the generated solutions. Which is why people still prefer Wolframe|Alpha, but it requires rigid input constraints. 
@@ -28,6 +31,7 @@ Then, consider there is a chance of hallucination, and you solve the problem or 
 - **Automated Verification:** Executes generated code; if the solver’s numeric or symbolic result disagrees with Mathstral’s, automatically feeds the solver’s counterexample back into Mathstral for a refined derivation.  
 - **Modular Domains:** Easily extendable support for algebra, ODEs, PDEs, logic, and additional areas.  
 - **Configurable Backends:** Plug in different versions of Z3, Sympy, or other solver engines.
+- **RAG:** Weaviate
 
 ---
 
