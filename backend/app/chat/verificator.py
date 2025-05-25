@@ -50,7 +50,7 @@ def verify_step(step: str,
     f"You are a proof verifier. Use the following REFERENCE information to check one proof step.\n\n"
     f"STEP TO VERIFY:\n{step}\n"
     )
-    
+
     if previous_step:
         prompt += f"\nPREVIOUS STEP:\n{previous_step}\n"
 
