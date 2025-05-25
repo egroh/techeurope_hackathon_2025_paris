@@ -114,6 +114,132 @@ async def chat_websocket_endpoint(websocket: WebSocket):
                     # Optionally inform client if Mathstral produced nothing
                     # (though generate_stream already sends start/end chunks)
 
+                if mathstral_full_solution:
+                    logger.warning(
+                        f"[{active_conversation_id}] MathVerificationService not available. Skipping verification."
+                    )
+                    # Optionally inform client
+                    info_msg = OpenAIChatMessage(
+                        type="ai", # Define in schema
+                        content="Solution generated. Verification service is not used.",
+                        conversation_id=active_conversation_id,
+                        message_id=str(uuid.uuid4())
+                    )
+                    await websocket.send_text(info_msg.model_dump_json())
+                else:
+                    logger.info(
+                        f"[{active_conversation_id}] No solution from Mathstral to verify."
+                    )
+                    # Client already knows stream ended, possibly with no content.
+
+            except WebSocketDisconnect:
+                logger.info(
+                    f"WebSocket disconnected for conv ID: {active_conversation_id}"
+                )
+                break
+            except Exception as e:
+                logger.error(
+                    f"Error in WebSocket main loop for conv {active_conversation_id}: {e}",
+                    exc_info=True,
+                )
+                try:
+                    error_response = OpenAIChatMessage(
+                        type="error",
+                        content="An unexpected server error occurred processing your request.",
+                        conversation_id=active_conversation_id,
+                        message_id=str(uuid.uuid4()),
+                    )
+                    await websocket.send_text(
+                        error_response.model_dump_json()
+                    )
+                except Exception as send_e:
+                    logger.error(
+                        f"[{active_conversation_id}] Failed to send error to client: {send_e}"
+                    )
+                break  # Break from while loop on unhandled errors
+    finally:
+        logger.info(
+            f"Closing WebSocket handler for conv ID: {active_conversation_id}"
+        )
+
+
+@router.websocket("/chat_with_verification")
+async def chat_websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    active_conversation_id = str(uuid.uuid4())
+    logger.info(
+        f"WebSocket accepted for new conversation: {active_conversation_id}"
+    )
+
+    try:
+        while True:
+            try:
+                data = await websocket.receive_text()
+                logger.debug(
+                    f"Received raw data on conv {active_conversation_id}: {data}"
+                )
+
+                try:
+                    message_data = json.loads(data)
+                    user_message_payload = PostUserMessage(**message_data)
+                except json.JSONDecodeError:
+                    logger.error(
+                        f"Invalid JSON on conv {active_conversation_id}: {data}"
+                    )
+                    error_response = OpenAIChatMessage(
+                        type="error",
+                        content="Error: Invalid JSON format.",
+                        conversation_id=active_conversation_id,
+                        message_id=str(uuid.uuid4()),
+                    )
+                    await websocket.send_text(
+                        error_response.model_dump_json()
+                    )
+                    continue
+                except ValidationError as e:
+                    logger.error(
+                        f"Validation error on conv {active_conversation_id}: {e.errors()}"
+                    )
+                    error_response = OpenAIChatMessage(
+                        type="error",
+                        content=f"Error: Invalid message structure. {e.errors()}",
+                        conversation_id=active_conversation_id,
+                        message_id=str(uuid.uuid4()),
+                    )
+                    await websocket.send_text(
+                        error_response.model_dump_json()
+                    )
+                    continue
+
+                original_problem_statement = user_message_payload.content
+                logger.info(
+                    f"User message on conv {active_conversation_id} (problem statement): '{original_problem_statement[:100]}...'"
+                )
+
+                ai_message_id_mathstral = str(uuid.uuid4())
+
+                # --- Step 1: Generate Math Solution with Mathstral (Streaming) ---
+                logger.info(
+                    f"[{active_conversation_id}] Calling Mathstral model for solution..."
+                )
+                mathstral_full_solution = (
+                    await MATHSTRAL_MODEL.generate_stream(
+                        prompt=original_problem_statement,
+                        websocket=websocket,
+                        conversation_id=active_conversation_id,
+                        ai_message_id=ai_message_id_mathstral,
+                    )
+                )
+                logger.info(
+                    f"[{active_conversation_id}] Mathstral stream completed. Full solution length: {len(mathstral_full_solution)}"
+                )
+                if not mathstral_full_solution:
+                    logger.warning(
+                        f"[{active_conversation_id}] Mathstral returned an empty solution."
+                    )
+                    # Optionally inform client if Mathstral produced nothing
+                    # (though generate_stream already sends start/end chunks)
+
                 # --- Step 2: Verify Solution with Codestral (if available and solution is valid) ---
                 if MATH_VERIFICATION_SERVICE and mathstral_full_solution:
                     logger.info(
