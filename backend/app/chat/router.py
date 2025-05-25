@@ -136,7 +136,7 @@ async def chat_websocket_endpoint(websocket: WebSocket):
                     _prompt_for_verification = _format_prompt_for_verification(question, step_by_step_answer, related_thms)
 
                     ai_message_id_mathstral_verification = str(uuid.uuid4())
-                    mathstral_full_solution = (
+                    mathstral_full_solution_forverification = (
                         await MATHSTRAL_MODEL.generate_stream(
                             prompt=_prompt_for_verification,
                             websocket=websocket,
@@ -146,10 +146,10 @@ async def chat_websocket_endpoint(websocket: WebSocket):
                         )
                     )
 
-                    verification_result_dict["details"] = mathstral_full_solution
+                    verification_result_dict["details"] = mathstral_full_solution_forverification
                     
                     logger.info(
-                        f"[{active_conversation_id}] Mathstral verification stream completed. Full solution length: {len(mathstral_full_solution)}"
+                        f"[{active_conversation_id}] Mathstral verification stream completed. Full solution length: {len(mathstral_full_solution_forverification)}"
                     )
 
 
