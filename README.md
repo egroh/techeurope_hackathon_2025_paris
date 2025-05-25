@@ -1,4 +1,4 @@
-# Math LLM + Solvers
+# Mastral Chat
 
 ### By far the most accurate Math solving LLM 
 
