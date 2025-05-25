@@ -18,6 +18,31 @@ logger = logging.getLogger(__name__)
 # Use getenv for HF_HOME for flexibility, default to /tmp/huggingface_cache
 os.environ["HF_HOME"] = os.getenv("HF_HOME", "/tmp/huggingface_cache")
 
+_verification_prompt_header = """You are a helpful math tutor. I will give you:\n"
+- A mathematical question\n"
+- A step-by-step answer\n
+- A list of related theorems or definitions\n
+
+Please generate a clear and logical explanation that:\n
+- Restates the question in simple terms\n
+- Explains each step of the solution, referencing the relevant theorems where appropriate\n
+- Also validate step by step solution based on related theorems\n
+- Provides insight into why each step works\n
+- Optionally, summarizes the overall strategy at the end
+"""
+
+def _format_prompt_for_verification(question: str, step_by_step_answer: str, related_thms: str) -> str:
+    prompt_formatted = f"""
+Question:
+{question}
+
+Step-by-step Answer:
+{step_by_step_answer}
+
+Related Theorems/Definitions:
+{related_thms}
+    """
+    return prompt_formatted
 
 class MathstralModel(object):
     def __init__(self):
@@ -100,13 +125,16 @@ class MathstralModel(object):
         )
         logger.info("MathstralModel initialized successfully.")
 
-    def _format_prompt(self, prompt: str) -> str:
+    def _format_prompt(self, prompt: str, is_verification_step: bool=False) -> str:
+        if is_verification_step:
+            content = _verification_prompt_header + "\n" + prompt
+        else:
+            content = prompt + "\n" + "Give a detailed step-by-step solution. Start each step with '<step N>' where N is the step number."
+
         messages = [
             {
                 "role": "user",
-                "content": prompt
-                + "\n"
-                + "Give a detailed step-by-step solution. Start each step with '<step N>' where N is the step number.",
+                "content": content,
             }
         ]
         formatted_prompt = self.tokenizer.apply_chat_template(
@@ -140,6 +168,7 @@ class MathstralModel(object):
         websocket,
         conversation_id: str,
         ai_message_id: str,
+        is_verification_step: bool=False
     ) -> str:  # Added return type hint
         # To avoid circular import if schemas.py imports this file
         from .schemas import OpenAIChatMessage
@@ -147,7 +176,7 @@ class MathstralModel(object):
         logger.info(
             f"[{conversation_id}-{ai_message_id}] Formatting prompt: '{prompt[:50]}...'"
         )
-        formatted_prompt = self._format_prompt(prompt)
+        formatted_prompt = self._format_prompt(prompt, is_verification_step)
         full_response_for_log = ""  # Initialize here
 
         try:

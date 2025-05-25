@@ -8,6 +8,7 @@ from fastapi import APIRouter, WebSocket, HTTPException, WebSocketDisconnect
 from pydantic import BaseModel, Field, ValidationError
 
 from .mathstral_model import MATHSTRAL_MODEL
+from .mathstral_model import _format_prompt_for_verification
 from .schemas import PostUserMessage, OpenAIChatMessage
 # Import the new verification service
 from .math_verification_pipeline import (
@@ -127,6 +128,29 @@ async def chat_websocket_endpoint(websocket: WebSocket):
                     logger.info(
                         f"[{active_conversation_id}] Codestral verification result: {verification_result_dict}"
                     )
+
+                    # validate based on step-by-step solution and related theorems
+                    question = original_problem_statement
+                    step_by_step_answer = mathstral_full_solution
+                    related_thms = verification_result_dict["details"]
+                    _prompt_for_verification = _format_prompt_for_verification(question, step_by_step_answer, related_thms)
+
+                    mathstral_full_solution = (
+                        await MATHSTRAL_MODEL.generate_stream(
+                            prompt=_prompt_for_verification,
+                            websocket=websocket,
+                            conversation_id=active_conversation_id,
+                            ai_message_id=ai_message_id_mathstral,
+                            is_verification_step=True
+                        )
+                    )
+
+                    verification_result_dict["details"] = mathstral_full_solution
+                    
+                    logger.info(
+                        f"[{active_conversation_id}] Mathstral verification stream completed. Full solution length: {len(mathstral_full_solution)}"
+                    )
+
 
                     # Send verification result back to client
                     verification_message_id = str(uuid.uuid4())
