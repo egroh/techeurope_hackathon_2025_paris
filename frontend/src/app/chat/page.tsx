@@ -213,35 +213,50 @@ export default function ChatPage() {
         )}
       </div>
 
-        {/* NEW: Dropdown UI */}
-      <div className="px-4 py-2">
-        <label
-          htmlFor="task-type"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          Choose task type:
-        </label>
-        <select
-          id="task-type"
-          value={taskType}
-          onChange={handleTaskTypeChange}
-          className="border border-gray-300 rounded-md p-2 text-sm w-full"
-        >
-          <option value="abstract">🧠 Abstract Problem Solver</option>
-          <option value="functional">📈 Functional Problem Solver (ODEs, equations, integrals...)</option>
-          <option value="lesson">📚 Lesson Explainer</option>
-        </select>
-      </div>
+        <Chat
+    messages={messages}
+    onSendMessage={(message: string) => {
+      userSentMessage(message);
+    }}
+    taskTypeSelector={
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {/* Dropdown */}
+        <div className="flex-1">
+          <label
+            htmlFor="task-type"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Choose task type:
+          </label>
+          <select
+            id="task-type"
+            value={taskType}
+            onChange={handleTaskTypeChange}
+            className="border border-gray-300 rounded-md p-2 text-sm w-full"
+          >
+            <option value="abstract">🧠 Abstract Problem Solver</option>
+            <option value="functional">📈 Functional Problem Solver (ODEs, equations, integrals...)</option>
+            <option value="lesson">📚 Lesson Explainer</option>
+          </select>
+        </div>
 
-      <Chat
-        messages={messages}
-        onSendMessage={(message: string) => {
-          userSentMessage(message);
-        }}
-        // You might need to pass down the current user ID if CardsChat needs it
-        // userId="current_user_id_placeholder"
-        // isLoading={messages.some(msg => msg.isStreaming)} // Optional: pass a global loading state
-      />
-    </div>
+        {/* Toggle */}
+        {["abstract", "functional"].includes(taskType) && (
+          <div className="flex items-center mt-2 md:mt-7">
+            <label className="inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={reduceHallucinations}
+                onChange={toggleHallucinations}
+                className="form-checkbox h-4 w-4 text-blue-600"
+              />
+              <span className="ml-2 text-sm text-gray-800">Reduce hallucinations</span>
+            </label>
+          </div>
+        )}
+      </div>
+    }
+  />
+  </div>
   );
 }
