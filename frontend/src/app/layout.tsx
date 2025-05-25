@@ -31,8 +31,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}> {/* Apply variables to <html> */}
-      <body className="antialiased"> {/* antialiased can stay on body */}
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}> {}
+      <body className="antialiased"> {}
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset>
