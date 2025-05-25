@@ -16,6 +16,12 @@ export default function ChatPage() {
   >("connecting");
   const currentConversationId = useRef<string | null>(null); // To store conversation ID
 
+  const [taskType, setTaskType] = useState("abstract");
+
+  const handleTaskTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setTaskType(e.target.value);
+  };
+
   useEffect(() => {
     console.log(`[ChatPage] Attempting to connect WebSocket to: ${WS_URL}`);
     const connectWebSocket = () => {
@@ -141,6 +147,7 @@ export default function ChatPage() {
       socket.send(
         JSON.stringify({
           content: messageContent,
+          task_type: taskType,
           // conversation_id: currentConversationId.current // Optional: if backend uses it to resume
         })
       );
