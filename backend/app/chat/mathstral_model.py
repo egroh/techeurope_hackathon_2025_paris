@@ -1,4 +1,3 @@
-
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 from huggingface_hub import login
@@ -30,10 +29,21 @@ class MathstralModel(object):
         self.tokenizer = tokenizer
 
     def _format_prompt(self, prompt: str) -> str:
-        prompt_formatted = prompt + "\n" +\
-                            "Give step by step solution in the following format.\n" +\
-                            "<step 1>\n<step 2>\n ... \n<step n>"
-        return prompt_formatted
+            return (
+                "Solve the following problem:\n"
+                f"{prompt}\n\n"
+                "First, identify any assumptions inherent in the problem statement. "
+                "List each one on its own line using the format:\n"
+                "<assumption 1>\n"
+                "<assumption 2>\n"
+                "...\n\n"
+                "Once you’ve listed assumptions, provide a detailed, step-by-step solution. "
+                "Use the following format exactly:\n"
+                "<step 1>\n"
+                "<step 2>\n"
+                "...\n"
+                "<step n>\n"
+            )
     
     def generate(self, prompt: str):
         # Encode the input prompt
