@@ -13,30 +13,13 @@ logger = logging.getLogger(__name__)
 
 # Default placeholder values from your original script
 DEFAULT_MISTRAL_API_KEY_PLACEHOLDER = "IhmKJGkJv61EPFwWIuY9wCgnbaFV6Fm1"
-ANOTHER_MISTRAL_PLACEHOLDER = "your_mistral_api_key_here"
+ANOTHER_MISTRAL_PLACEHOLDER = "IhmKJGkJv61EPFwWIuY9wCgnbaFV6Fm1"
 
 
 class MathVerificationService:
     def __init__(self):
         logger.info("Initializing MathVerificationService...")
-
-        self.mistral_api_key = os.getenv(
-            "MISTRAL_API_KEY", DEFAULT_MISTRAL_API_KEY_PLACEHOLDER
-        )
-        self.codestral_ready = False
-        if (
-            not self.mistral_api_key
-            or self.mistral_api_key == DEFAULT_MISTRAL_API_KEY_PLACEHOLDER
-            or self.mistral_api_key == ANOTHER_MISTRAL_PLACEHOLDER
-        ):
-            logger.warning(
-                "MISTRAL_API_KEY is not set or is using a default placeholder. "
-                "Codestral verification will be unavailable."
-            )
-        else:
-            logger.info("MISTRAL_API_KEY found and configured for Codestral.")
-            self.codestral_ready = True
-        logger.info("MathVerificationService initialized.")
+        self.mistral_api_key = DEFAULT_MISTRAL_API_KEY_PLACEHOLDER
 
     def verify_solution(
         self, problem_statement: str, math_solution_str: str
@@ -48,17 +31,6 @@ class MathVerificationService:
         logger.info(
             f"Attempting Codestral verification for problem: '{problem_statement[:50]}...'"
         )
-
-        if not self.codestral_ready:
-            logger.warning(
-                "Codestral verification skipped: MISTRAL_API_KEY not properly configured."
-            )
-            return {
-                "verified": False,
-                "status": "skipped_configuration",
-                "reason": "MISTRAL_API_KEY not configured.",
-                "details": None,
-            }
 
         if not math_solution_str:
             logger.warning(

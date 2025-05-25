@@ -1,7 +1,7 @@
 "use client";
 
-import { CardsChat } from "@/components/chat"; // Assuming this is your shadcn/ui chat component
-import { BaseMessage } from "@/lib/apiTypes"; // Your updated type
+import {Chat} from "@/components/ChatCards"; // Assuming this is your shadcn/ui chat component
+import { OpenAIChatMessage } from "@/lib/apiTypes"; // Your updated type
 import { useEffect, useState, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -10,7 +10,7 @@ const WS_URL =
 
 export default function ChatPage() {
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [messages, setMessages] = useState<Array<BaseMessage>>([]);
+  const [messages, setMessages] = useState<Array<OpenAIChatMessage>>([]);
   const [connectionStatus, setConnectionStatus] = useState<
     "connecting" | "connected" | "disconnected"
   >("connecting");
@@ -32,7 +32,7 @@ export default function ChatPage() {
 
       ws.onmessage = (event) => {
         try {
-          const data = JSON.parse(event.data as string) as BaseMessage; // Cast to your updated type
+          const data = JSON.parse(event.data as string) as OpenAIChatMessage; // Cast to your updated type
           console.log("[ChatPage] Received data:", data);
 
           if (!currentConversationId.current && data.conversation_id) {
@@ -127,7 +127,7 @@ export default function ChatPage() {
 
   const userSentMessage = (messageContent: string) => {
     if (socket && socket.readyState === WebSocket.OPEN) {
-      const userMessage: BaseMessage = {
+      const userMessage: OpenAIChatMessage = {
         id: uuidv4(), // Client-side unique ID for this message
         type: "human",
         content: messageContent,
@@ -186,7 +186,7 @@ export default function ChatPage() {
           </span>
         )}
       </div>
-      <CardsChat
+      <Chat
         messages={messages}
         onSendMessage={(message: string) => {
           userSentMessage(message);

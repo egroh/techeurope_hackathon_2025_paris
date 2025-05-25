@@ -1,26 +1,24 @@
-// src/app/layout.tsx (or wherever your RootLayout is)
+// src/app/layout.tsx
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google"; // Corrected import
+// Remove the old 'next/font/google' imports for Geist
+// import { Geist, Geist_Mono } from "next/font/google"; // DELETE THIS LINE
+
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+
 import "./globals.css";
+import 'katex/dist/katex.min.css'; // Your KaTeX CSS
 import { Toaster } from "sonner";
 import { AppSidebar } from "@/components/app-sidebar";
-// Removed Breadcrumb imports as they are no longer used here
-import { Separator } from "@/components/ui/separator"; // Keep if used elsewhere, or remove if only for breadcrumbs
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator"; // Assuming this is still used somewhere
 
-const geistSans = Geist({ // Corrected variable name
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({ // Corrected variable name
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// No need to call GeistSans() or GeistMono() like with next/font/google
+// The package handles providing the CSS variables and font loading.
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -33,23 +31,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}> {/* Apply variables to <html> */}
+      <body className="antialiased"> {/* antialiased can stay on body */}
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset>
-            {/* The header containing breadcrumbs is removed. */}
-            {/* We might need a minimal header for the SidebarTrigger if it's not part of AppSidebar */}
             <header className="flex h-12 items-center px-4 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 border-b">
-              {/* This ensures the trigger is always accessible and styled consistently */}
               <SidebarTrigger className="-ml-1" />
-              {/* You can add a page title here if needed, passed via context or props */}
             </header>
-            <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8
-                             relative pattern-main-area">
-              {/* Added flex-1 and overflow-y-auto to the main content wrapper */}
+            <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
               {children}
               <Toaster />
             </main>
