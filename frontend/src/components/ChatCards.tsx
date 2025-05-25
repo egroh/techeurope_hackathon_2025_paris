@@ -38,17 +38,21 @@ export function Chat({ messages, onSendMessage, taskTypeSelector }: ChatProps) {
 
   return (
     <Card className="flex flex-col w-full h-[calc(100vh-150px)] md:h-[calc(100vh-120px)] shadow-xl">
-      <CardHeader className="w-full flex justify-center items-center py-3 border-b sticky top-0 bg-card z-10">
-        <h2 className="text-lg font-semibold text-accent-foreground">
-          Mathstral Chat
-        </h2>
+      <CardHeader className="w-full py-3 border-b sticky top-0 bg-card z-10">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+          <h2 className="text-lg font-semibold text-accent-foreground text-center md:text-left">
+            Mathstral Chat
+          </h2>
+
+          {/* Render dropdown + toggle in header */}
+          {taskTypeSelector && (
+            <div className="w-full md:w-auto">{taskTypeSelector}</div>
+          )}
+        </div>
       </CardHeader>
 
-      <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
 
-        {taskTypeSelector && (
-          <div className="mb-4">{taskTypeSelector}</div>
-        )}
+      <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
 
         {messages.map((message: OpenAIChatMessage) => (
           <ChatMessage

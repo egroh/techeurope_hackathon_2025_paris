@@ -17,9 +17,20 @@ export default function ChatPage() {
   const currentConversationId = useRef<string | null>(null); // To store conversation ID
 
   const [taskType, setTaskType] = useState("abstract");
+  const [reduceHallucinations, setReduceHallucinations] = useState(false);
 
   const handleTaskTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setTaskType(e.target.value);
+    const selected = e.target.value;
+    setTaskType(selected);
+
+    if (!["abstract", "functional"].includes(selected)) {
+      setReduceHallucinations(false);
+    }
+  };
+
+
+  const toggleHallucinations = () => {
+    setReduceHallucinations((prev) => !prev);
   };
 
   useEffect(() => {
@@ -155,6 +166,7 @@ export default function ChatPage() {
         JSON.stringify({
           content: messageContent,
           task_type: taskType,
+            reduce_hallucinations: reduceHallucinations,
           // conversation_id: currentConversationId.current // Optional: if backend uses it to resume
         })
       );
@@ -216,7 +228,7 @@ export default function ChatPage() {
           className="border border-gray-300 rounded-md p-2 text-sm w-full"
         >
           <option value="abstract">🧠 Abstract Problem Solver</option>
-          <option value="functional">📈 Functional Problem Solver</option>
+          <option value="functional">📈 Functional Problem Solver (ODEs, equations, integrals...)</option>
           <option value="lesson">📚 Lesson Explainer</option>
         </select>
       </div>
