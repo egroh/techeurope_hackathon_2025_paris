@@ -2,15 +2,15 @@
 "use client";
 
 import React from 'react';
-import ReactMarkdown from 'react-markdown'; // Import Components type
+import ReactMarkdown, { Components } from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
-import { OpenAIChatMessage, ToolCall } from '@/lib/apiTypes'; // Assuming ToolCall is defined in apiTypes
+import { OpenAIChatMessage, ToolCall } from '@/lib/apiTypes';
 import { cn } from '@/lib/utils';
-import { AiThinkingStream } from './AiThinkingStream'; // Import the new component
-// import 'katex/dist/katex.min.css'; // Ensure loaded globally
+import { AiThinkingStream } from './AiThinkingStream';
+// import 'katex/dist/katex.min.css';
 
 interface ChatMessageProps {
   message: OpenAIChatMessage;
@@ -20,13 +20,32 @@ export function ChatMessage({ message }: ChatMessageProps) {
   const isHumanMessage = message.type === 'human';
   const isToolResponseMessage = message.type === 'tool_response';
   const isAiRequestingTool = message.type === 'ai' && message.tool_calls && message.tool_calls.length > 0;
-  // An AI message that is NOT a tool request could be a simple text response or a streamed response
-  const isStreamableAiMessage = message.type === 'ai' && !isAiRequestingTool;
 
-  // If it's an AI message that was streamed (or is streaming), use AiThinkingStream
-  // We can identify streamed messages if they have a message_id (set at stream start)
-  // or if isStreaming is true.
-  const showThinkingStream = isStreamableAiMessage && (message.message_id || message.isStreaming !== undefined);
+  // Determine if we should show the "thinking" UI
+  // Show if message.isThinking is explicitly true,
+  // OR if it's an AI message that is currently streaming and isThinking is not explicitly false.
+  // (Treat undefined/null isThinking as potentially thinking if it's a streaming AI message)
+  const showThinkingUI =
+    message.type === 'ai' &&
+    !isAiRequestingTool && // Don't show for AI tool requests, they have their own UI
+    (message.isThinkingProcess === true || (message.isStreaming && message.isThinkingProcess !== false));
+
+  const markdownComponents: Components = {
+    p: ({ node: _node, ...props }) => <p className="mb-1 last:mb-0" {...props} />,
+    code({ node: _node, inline, className, children, ...props }) {
+      const match = /language-(\w+)/.exec(className || '');
+      return !inline && match ? (
+        <pre className="bg-black/80 text-white p-3 rounded-md overflow-x-auto my-2 text-xs leading-relaxed">
+          <code className={className} {...props}>{children}</code>
+        </pre>
+      ) : (
+        <code className={cn("bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded-sm text-xs", isHumanMessage ? "text-primary-foreground/80" : "text-foreground/80", className)} {...props}>{children}</code>
+      );
+    },
+    ul: ({node: _node, ...props}) => <ul className="list-disc list-inside my-1 space-y-0.5 pl-2" {...props} />,
+    ol: ({node: _node, ...props}) => <ol className="list-decimal list-inside my-1 space-y-0.5 pl-2" {...props} />,
+    li: ({node: _node, ...props}) => <li className="pl-1" {...props} />,
+  };
 
   return (
     <div
@@ -36,46 +55,33 @@ export function ChatMessage({ message }: ChatMessageProps) {
           ? "ml-auto bg-primary text-primary-foreground rounded-br-none self-end"
           : isToolResponseMessage
           ? "bg-amber-100 dark:bg-amber-800/30 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700 self-start rounded-tl-none"
-          : isAiRequestingTool // AI asking to call a tool (shows tool_calls)
+          : isAiRequestingTool
           ? "bg-sky-100 dark:bg-sky-800/30 text-sky-900 dark:text-sky-200 border border-sky-300 dark:border-sky-700 self-start rounded-tl-none"
-          : "bg-muted text-foreground self-start rounded-tl-none" // Default AI (could be simple or streamed)
+          : "bg-muted text-foreground self-start rounded-tl-none"
       )}
     >
-      {/* Render primary content:
-          - For human messages: direct content (could be Markdown if users can input it)
-          - For AI tool requests: the preliminary content before tool calls
-          - For simple AI non-streamed text: direct content
-          - For tool_response: direct content (tool's output)
-          - For streamed AI: This part might be a summary or initial prompt,
-            the detailed stream goes into AiThinkingStream.
-            Let's assume for now that if showThinkingStream is true, the main content
-            is handled by AiThinkingStream. If there's also a top-level message.content
-            for a streamed message (e.g. "Okay, I will solve that for you:"), render it.
-      */}
-      {message.content && !showThinkingStream && (
-         <ReactMarkdown /* Basic Markdown for non-streamed AI or human messages if needed */
-            remarkPlugins={[remarkMath, remarkGfm]}
-            rehypePlugins={[rehypeKatex, rehypeRaw]}
-            // You might want simpler markdownComponents here if AiThinkingStream has the full ones
-            components={{ p: ({node: _node, ...props}) => <p className="mb-0" {...props} /> }}
-         >
+      {/* If showThinkingUI is true, AiThinkingStream handles the content. */}
+      {/* Otherwise, render content directly if it exists. */}
+      {message.content && !showThinkingUI && (
+        <ReactMarkdown
+          remarkPlugins={[remarkMath, remarkGfm]}
+          rehypePlugins={[rehypeKatex, rehypeRaw]}
+          components={markdownComponents}
+        >
           {message.content}
         </ReactMarkdown>
       )}
-      {/* If it's an AI message that is NOT a tool request, and it has a message_id (meaning it was streamed)
-          OR if it's currently streaming, then show the AiThinkingStream component.
-          The content for AiThinkingStream will be message.content which is accumulated in ChatPage.
-      */}
-      {showThinkingStream && (
+
+      {showThinkingUI && (
         <AiThinkingStream
           streamedContent={message.content}
-          isStreaming={message.isStreaming}
-          // Default open if it's currently streaming or just finished and has content
-          defaultOpen={message.isStreaming || (message.content && message.content.length > 0)}
+          // Pass isStreaming to AiThinkingStream for its internal spinner logic
+          // but the decision to show AiThinkingStream itself is based on message.isThinking
+          isStreaming={message.isStreaming === true}
+          defaultOpen={message.isThinking || (message.content && message.content.length > 0)}
         />
       )}
 
-      {/* Display tool calls if they exist (typically for AI messages requesting a tool) */}
       {message.tool_calls && message.tool_calls.length > 0 && (
         <div className="mt-2 space-y-1 border-t border-current/20 pt-2">
           {message.tool_calls.map((tool_call: ToolCall, i: number) => (

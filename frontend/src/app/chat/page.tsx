@@ -39,41 +39,48 @@ export default function ChatPage() {
             currentConversationId.current = data.conversation_id;
           }
 
-          setMessages((prevMessages) => {
-            if (data.type === "ai" && data.message_id) {
+        setMessages((prevMessages) => {
+            if (data.type === "ai" && data.message_id) { // AI message part of a stream
               if (data.stream_event === "start") {
-                // AI message stream starts, add a new message placeholder
                 return [
                   ...prevMessages,
                   {
-                    ...data,
-                    id: data.message_id, // Use AI message_id as the key for this message
-                    content: data.content || "", // Start with initial content or empty
+                    ...data, // This will include data.isThinking if sent by backend
+                    id: data.message_id,
+                    content: data.content || "",
                     isStreaming: true,
+                    // isThinking is directly from 'data' if backend sends it
                   },
                 ];
               } else if (data.stream_event === "chunk") {
-                // AI message chunk, append to existing message
                 return prevMessages.map((msg) =>
-                  msg.id === data.message_id // Match by the AI's response ID
+                  msg.id === data.message_id
                     ? {
                         ...msg,
                         content: (msg.content || "") + (data.content || ""),
-                        isStreaming: true,
+                        isStreaming: true, // Keep streaming true
+                        // isThinking should remain true, backend might not resend it with every chunk
+                        // If backend sends isThinking with chunks, it will be in 'data' and spread:
+                        ...(data.isThinkingProcess !== undefined && { isThinking: data.isThinkingProcess }),
                       }
                     : msg
                 );
               } else if (data.stream_event === "end") {
-                // AI message stream ends
                 return prevMessages.map((msg) =>
                   msg.id === data.message_id
-                    ? { ...msg, isStreaming: false }
+                    ? {
+                        ...msg,
+                        isStreaming: false,
+                        isThinking: false, // Explicitly set isThinking to false on stream end
+                        // If backend sends final content with 'end' event, spread 'data'
+                        ...(data.content && { content: (msg.content || "") + data.content }),
+                      }
                     : msg
                 );
               }
             }
-            // For non-streaming messages or other types (errors, user echos if implemented)
-            // Ensure each message has a unique 'id' for React keys
+            // For non-streamed messages (e.g., a complete AI response sent at once)
+            // or other message types. Ensure 'isThinking' from 'data' is included.
             return [...prevMessages, { ...data, id: data.id || uuidv4() }];
           });
         } catch (error) {

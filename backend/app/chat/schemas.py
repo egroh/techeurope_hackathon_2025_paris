@@ -25,5 +25,7 @@ class OpenAIChatMessage(BaseModel): # Used for sending messages TO client
     stream_event: Optional[Literal["start", "chunk", "end"]] = None
     isStreaming: Optional[bool] = None
 
+    isThinkingProcess: Optional[bool] = None
+
     class Config:
         use_enum_values = True

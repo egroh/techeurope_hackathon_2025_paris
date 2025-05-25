@@ -114,6 +114,8 @@ export interface components {
             stream_event?: ("start" | "chunk" | "end") | null;
             /** Isstreaming */
             isStreaming?: boolean | null;
+            /** Isthinkingprocess */
+            isThinkingProcess?: boolean | null;
         };
         /** PostExampleRequest */
         PostExampleRequest: {
