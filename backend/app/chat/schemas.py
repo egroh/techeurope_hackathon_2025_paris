@@ -23,6 +23,7 @@ class OpenAIChatMessage(BaseModel): # Used for sending messages TO client
     # For streaming
     message_id: Optional[str] = None # ID of the specific AI response being streamed
     stream_event: Optional[Literal["start", "chunk", "end"]] = None
+    isStreaming: Optional[bool] = None
 
     class Config:
         use_enum_values = True

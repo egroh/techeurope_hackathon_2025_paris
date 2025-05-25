@@ -112,6 +112,8 @@ export interface components {
             message_id?: string | null;
             /** Stream Event */
             stream_event?: ("start" | "chunk" | "end") | null;
+            /** Isstreaming */
+            isStreaming?: boolean | null;
         };
         /** PostExampleRequest */
         PostExampleRequest: {
